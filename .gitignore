@@ -1,14 +1,17 @@
-# Virtual environments
+# virtual environments
 venv/
 .venv/
 Backend/venv/
 
-# Python cache
+# cache
 __pycache__/
 *.pyc
 
-# Local profile storage
+# Local prfoile data
 profile_data.json
 
-# VS Code settings
+# VS settings
 .vscode/
+
+# API
+.env
