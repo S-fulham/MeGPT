@@ -1,0 +1,14 @@
+# Virtual environments
+venv/
+.venv/
+Backend/venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Local profile storage
+profile_data.json
+
+# VS Code settings
+.vscode/
