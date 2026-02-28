@@ -10,10 +10,9 @@ from fastapi.middleware.cors import CORSMiddleware
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
 api_key = os.getenv("OPENAI_API_KEY")
-print("ENV FILE LOADED, KEY =", api_key)
 
 if not api_key:
-    raise ValueError("OPENAI_API_KEY not found. Check your .env file.")
+    raise ValueError("OPENAI_API_KEY not found. Check your enviorment variables")
 
 client = OpenAI(api_key=api_key)
 
