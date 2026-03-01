@@ -6,8 +6,11 @@ from dotenv import load_dotenv
 from openai import OpenAI
 import os
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
+
+app.mount("/", StaticFiles(directory="Frontend/static", html=True), name="static")
 
 api_key = os.getenv("OPENAI_API_KEY")
 
