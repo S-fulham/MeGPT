@@ -10,7 +10,9 @@ from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
-app.mount("/static", StaticFiles(directory="Frontend/static"), name="static")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) 
+FRONTEND_DIR = os.path.join(BASE_DIR, "../Frontend/static")  
+app.mount("/static", StaticFiles(directory=FRONTEND_DIR, html=True), name="static")
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
