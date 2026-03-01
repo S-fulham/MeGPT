@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
-from .style_analyser import update_profile, get_profile, reset_profile
+from style_analyser import update_profile, get_profile, reset_profile
 from dotenv import load_dotenv
 from openai import OpenAI
 import os
