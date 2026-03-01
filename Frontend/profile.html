@@ -57,6 +57,10 @@ Recommended: Add at least 5 texts to build a strong profile.
 <button onclick="resetProfile()">Delete All</button>
 
 <script>
+const stored = localStorage.getItem("texts");
+if (stored) localTexts = JSON.parse(stored);
+textCount = localTexts.length;
+renderTexts();
 const API_BASE = "https://megpt-29p3.onrender.com";
 let textCount = 0;
 let localTexts = [];
@@ -93,13 +97,15 @@ async function addText() {
     localTexts.push({ name: textName, content: text });
     renderTexts();
 
+    // Save locally in browser
+    localStorage.setItem("texts", JSON.stringify(localTexts));
+
     await fetch(`${API_BASE}/add_texts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ texts: [text] })
     });
 
-    // Clear input AFTER successful save
     input.value = "";
 }
 
@@ -112,6 +118,8 @@ async function resetProfile() {
     textCount = 0;
     localTexts = [];
     renderTexts();
+
+    localStorage.removeItem("texts");
 
     await fetch(`${API_BASE}/reset_profile`, {
         method: "POST"
