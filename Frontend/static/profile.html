@@ -100,11 +100,11 @@ async function addText() {
     // Save locally in browser
     localStorage.setItem("texts", JSON.stringify(localTexts));
 
-    await fetch(`${API_BASE}/add_texts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ texts: [text] })
-    });
+await fetch(`${API_BASE}/add_texts`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ texts: [text] })
+});
 
     input.value = "";
 }
@@ -121,9 +121,9 @@ async function resetProfile() {
 
     localStorage.removeItem("texts");
 
-    await fetch(`${API_BASE}/reset_profile`, {
-        method: "POST"
-    });
+await fetch(`${API_BASE}/reset_profile`, {
+    method: "POST"
+});
 }
 </script>
 
