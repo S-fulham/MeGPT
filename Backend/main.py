@@ -10,20 +10,19 @@ from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
+app.mount("/static", StaticFiles(directory="Frontend/static"), name="static")
+
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
-app.mount("/", StaticFiles(directory="Frontend/static", html=True), name="static")
-
 api_key = os.getenv("OPENAI_API_KEY")
-
 if not api_key:
-    raise ValueError("OPENAI_API_KEY not found. Check your enviorment variables")
+    raise ValueError("OPENAI_API_KEY not found. Check your environment variables")
 
 client = OpenAI(api_key=api_key)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # later you can restrict this
+    allow_origins=["*"],  # later i can restrict this
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -39,21 +38,22 @@ class GenerateRequest(BaseModel):
 def read_root():
     return {"message": "Backend is running"}
 
-
+# Add texts to profile
 @app.post("/add_texts")
 def add_texts(request: TextUploadRequest):
     return update_profile(request.texts)
 
-
+# View profile
 @app.get("/profile")
 def view_profile():
     return get_profile()
 
-
+# Reset profile
 @app.post("/reset_profile")
 def clear_profile():
     return reset_profile()
 
+# Build prompt for style imitation
 def build_style_prompt(profile: dict, user_prompt: str) -> str:
     return f"""
 Write in the following style:
@@ -61,23 +61,25 @@ Write in the following style:
 Average sentence length: {profile.get("avg_sentence_length")}
 Average word length: {profile.get("avg_word_length")}
 Average paragraph length: {profile.get("avg_paragraph_length")}
-Vocabulary richness: {profile.get("vocab_richness")}
-Readability score: {profile.get("readability_score")}
+Vocabulary richness: {profile.get("vocabulary_richness")}
+Readability score: {profile.get("avg_readability")}
 
-Common words: {profile.get("top_words")}
-Common bigrams: {profile.get("top_bigrams")}
+Common words: {profile.get("top_10_words")}
+Common bigrams: {profile.get("top_10_bigrams")}
 
 Now write about:
 {user_prompt}
 """
+
+# Generate text in the users style
 @app.post("/generate")
 async def generate_text(request: GenerateRequest):
-    profile = get_profile()  
-    if "message" in profile:  
+    profile = get_profile()
+    if "message" in profile:
         return {"error": "No profile found. Upload texts first."}
 
     style_prompt = build_style_prompt(profile, request.prompt)
-    
+
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
