@@ -8,19 +8,17 @@ import os
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-app = FastAPI()
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__)) 
-FRONTEND_DIR = os.path.join(BASE_DIR, "../Frontend/static")  
-app.mount("/", StaticFiles(directory="Frontend/static", html=True), name="static")
-
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
-
 api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
     raise ValueError("OPENAI_API_KEY not found. Check your environment variables")
 
 client = OpenAI(api_key=api_key)
+app = FastAPI()
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) 
+FRONTEND_DIR = os.path.join(BASE_DIR, "../Frontend/static")  
+app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="static")
 
 app.add_middleware(
     CORSMiddleware,
@@ -35,10 +33,6 @@ class TextUploadRequest(BaseModel):
 
 class GenerateRequest(BaseModel):
     prompt: str
-
-@app.get("/")
-def read_root():
-    return {"message": "Backend is running"}
 
 # Add texts to profile
 @app.post("/add_texts")
