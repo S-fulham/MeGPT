@@ -21,7 +21,6 @@ if not api_key:
 
 client = OpenAI(api_key=api_key)
 
-app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # later you can restrict this
