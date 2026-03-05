@@ -1,73 +1,82 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>MeGPT</title>
-    <style>
-        body {
-            font-family: Arial;
-            max-width: 800px;
-            margin: auto;
-            padding: 20px;
-        }
-
-        button {
-            padding: 8px 14px;
-            margin: 5px 0;
-            cursor: pointer;
-        }
-
-        textarea {
-            width: 100%;
-            height: 100px;
-            margin-bottom: 10px;
-        }
-
-        pre {
-            background: #f4f4f4;
-            padding: 10px;
-            white-space: pre-wrap;
-        }
-    </style>
+<title>MeGPT</title>
+<style>
+body {
+font-family: Arial;
+max-width: 800px;
+margin: auto;
+padding: 20px;
+}
+button {
+padding: 8px 14px;
+margin: 5px 0;
+cursor: pointer;
+}
+textarea {
+width: 100%;
+height: 100px;
+margin-bottom: 10px;
+}
+pre {
+background: #f4f4f4;
+padding: 10px;
+white-space: pre-wrap;
+}
+</style>
 </head>
 <body>
 
 <h1>MeGPT</h1>
 
 <a href="profile.html">
-    <button>Go To Profile</button>
+<button>Go To Profile</button>
 </a>
 
 <h2>Generate</h2>
 
 <textarea id="promptInput" placeholder="Enter your prompt..."></textarea>
+
 <button onclick="generateText()">Generate</button>
 
 <h2>Output</h2>
+
 <pre id="output"></pre>
 
 <script>
+
 const API_BASE = "https://megpt-29p3.onrender.com";
 
 function display(data) {
-    document.getElementById("output").textContent =
-        typeof data === "string" ? data : JSON.stringify(data, null, 2);
+document.getElementById("output").textContent =
+typeof data === "string"
+? data
+: JSON.stringify(data, null, 2);
 }
 
 async function generateText() {
-    const prompt = document.getElementById("promptInput").value.trim();
-    if (!prompt) return;
 
-    display("Generating...");
+const prompt = document.getElementById("promptInput").value.trim();
 
-    const res = await fetch(`${API_BASE}/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt })
-    });
+if (!prompt) return;
 
-    const data = await res.json();
-    display(data.generated_text || data);
+display("Generating...");
+
+const res = await fetch(`${API_BASE}/generate`, {
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify({ prompt })
+});
+
+const data = await res.json();
+
+display(data.generated_text || data);
+
 }
+
 </script>
 
 </body>

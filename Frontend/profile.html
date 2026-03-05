@@ -1,130 +1,82 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Profile - MeGPT</title>
-    <style>
-        body {
-            font-family: Arial;
-            max-width: 800px;
-            margin: auto;
-            padding: 20px;
-        }
-
-        textarea {
-            width: 100%;
-            height: 120px;
-            margin-bottom: 10px;
-        }
-
-        button {
-            padding: 6px 12px;
-            margin: 5px 0;
-            cursor: pointer;
-        }
-
-        .text-item {
-            background: #f4f4f4;
-            padding: 8px;
-            margin-bottom: 5px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .note {
-            font-size: 0.9em;
-            color: gray;
-        }
-    </style>
+<title>MeGPT</title>
+<style>
+body {
+font-family: Arial;
+max-width: 800px;
+margin: auto;
+padding: 20px;
+}
+button {
+padding: 8px 14px;
+margin: 5px 0;
+cursor: pointer;
+}
+textarea {
+width: 100%;
+height: 100px;
+margin-bottom: 10px;
+}
+pre {
+background: #f4f4f4;
+padding: 10px;
+white-space: pre-wrap;
+}
+</style>
 </head>
 <body>
 
-<h1>Profile</h1>
+<h1>MeGPT</h1>
 
-<a href="index.html">
-    <button>Back</button>
+<a href="profile.html">
+<button>Go To Profile</button>
 </a>
 
-<p class="note">
-Recommended: Add at least 5 texts to build a strong profile.
-</p>
+<h2>Generate</h2>
 
-<textarea id="textInput" placeholder="Type your text here..."></textarea>
-<button onclick="addText()">Add Text</button>
+<textarea id="promptInput" placeholder="Enter your prompt..."></textarea>
 
-<h3>Saved Texts</h3>
-<div id="textList"></div>
+<button onclick="generateText()">Generate</button>
 
-<button onclick="resetProfile()">Delete All</button>
+<h2>Output</h2>
+
+<pre id="output"></pre>
 
 <script>
-const stored = localStorage.getItem("texts");
-if (stored) localTexts = JSON.parse(stored);
-textCount = localTexts.length;
-renderTexts();
-const API_BASE = "";
-let textCount = 0;
-let localTexts = [];
 
-function renderTexts() {
-    const container = document.getElementById("textList");
-    container.innerHTML = "";
+const API_BASE = "https://megpt-29p3.onrender.com";
 
-    localTexts.forEach((textObj, index) => {
-        const div = document.createElement("div");
-        div.className = "text-item";
-
-        const label = document.createElement("span");
-        label.textContent = textObj.name;
-
-        const delBtn = document.createElement("button");
-        delBtn.textContent = "Delete";
-        delBtn.onclick = () => deleteText(index);
-
-        div.appendChild(label);
-        div.appendChild(delBtn);
-        container.appendChild(div);
-    });
+function display(data) {
+document.getElementById("output").textContent =
+typeof data === "string"
+? data
+: JSON.stringify(data, null, 2);
 }
 
-async function addText() {
-    const input = document.getElementById("textInput");
-    const text = input.value.trim();
-    if (!text) return;
+async function generateText() {
 
-    textCount++;
-    const textName = "Text " + textCount;
+const prompt = document.getElementById("promptInput").value.trim();
 
-    localTexts.push({ name: textName, content: text });
-    renderTexts();
+if (!prompt) return;
 
-    // Save locally in browser
-    localStorage.setItem("texts", JSON.stringify(localTexts));
+display("Generating...");
 
-fetch(`${API_BASE}/add_texts`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ texts: [text] })
+const res = await fetch(`${API_BASE}/generate`, {
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify({ prompt })
 });
 
-    input.value = "";
+const data = await res.json();
+
+display(data.generated_text || data);
+
 }
 
-function deleteText(index) {
-    localTexts.splice(index, 1);
-    renderTexts();
-}
-
-async function resetProfile() {
-    textCount = 0;
-    localTexts = [];
-    renderTexts();
-
-    localStorage.removeItem("texts");
-
-fetch(`${API_BASE}/reset_profile`, {
-    method: "POST"
-});
-}
 </script>
 
 </body>
