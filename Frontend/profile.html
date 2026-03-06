@@ -64,6 +64,12 @@ const API_BASE = "https://megpt-29p3.onrender.com";
 let textCount = 0;
 let localTexts = [];
 
+const saved = localStorage.getItem("texts");
+if (saved) {
+    localTexts = JSON.parse(saved);
+    textCount = localTexts.length;
+}
+
 function renderTexts() {
     const container = document.getElementById("textList");
     container.innerHTML = "";
@@ -98,6 +104,7 @@ async function addText() {
     const textName = "Text " + textCount;
 
     localTexts.push({ name: textName, content: text });
+    localStorage.setItem("texts", JSON.stringify(localTexts));
     renderTexts();
 
     await fetch(`${API_BASE}/add_texts`, {
@@ -112,12 +119,14 @@ async function addText() {
 
 function deleteText(index) {
     localTexts.splice(index, 1);
+    localStorage.setItem("texts", JSON.stringify(localTexts));
     renderTexts();
 }
 
 async function resetProfile() {
     textCount = 0;
     localTexts = [];
+    localStorage.removeItem("texts");
     renderTexts();
 
     await fetch(`${API_BASE}/reset_profile`, {
