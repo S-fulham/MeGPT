@@ -57,11 +57,11 @@ Write in the following style:
 Average sentence length: {profile.get("avg_sentence_length")}
 Average word length: {profile.get("avg_word_length")}
 Average paragraph length: {profile.get("avg_paragraph_length")}
-Vocabulary richness: {profile.get("vocab_richness")}
-Readability score: {profile.get("readability_score")}
+Vocabulary richness: {profile.get("vocabulary_richness")}
+Readability score: {profile.get("avg_readability")}
 
-Common words: {profile.get("top_words")}
-Common bigrams: {profile.get("top_bigrams")}
+Common words: {profile.get("top_10_words")}
+Common bigrams: {profile.get("top_10_bigrams")}
 
 Now write about:
 {user_prompt}
