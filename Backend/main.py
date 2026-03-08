@@ -68,21 +68,26 @@ Now write about:
 """
 @app.post("/generate")
 async def generate_text(request: GenerateRequest):
-    profile = get_profile()  
-    if "message" in profile:  
+    profile = get_profile()
+
+    if not profile or "message" in profile:
         return {"error": "No profile found. Upload texts first."}
 
-    style_prompt = build_style_prompt(profile, request.prompt)
-    
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": "You are a writing style imitation engine."},
-            {"role": "user", "content": style_prompt}
-        ],
-        temperature=0.8
-    )
+    try:
+        style_prompt = build_style_prompt(profile, request.prompt)
 
-    return {
-        "generated_text": response.choices[0].message.content
-    }
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You imitate writing style."},
+                {"role": "user", "content": style_prompt}
+            ],
+            temperature=0.8
+        )
+
+        return {
+            "generated_text": response.choices[0].message.content
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
