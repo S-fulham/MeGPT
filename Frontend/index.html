@@ -1,82 +1,165 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>MeGPT</title>
-<style>
-body {
-font-family: Arial;
-max-width: 800px;
-margin: auto;
-padding: 20px;
-}
-button {
-padding: 8px 14px;
-margin: 5px 0;
-cursor: pointer;
-}
-textarea {
-width: 100%;
-height: 100px;
-margin-bottom: 10px;
-}
-pre {
-background: #f4f4f4;
-padding: 10px;
-white-space: pre-wrap;
-}
-</style>
+  <title>MeGPT</title>
+  <style>
+    body {
+      font-family: Arial;
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+    }
+    button {
+      padding: 8px 14px;
+      margin: 5px 0;
+      cursor: pointer;
+    }
+    textarea, input {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    textarea {
+      height: 100px;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 10px;
+      white-space: pre-wrap;
+    }
+    #authSection, #appSection {
+      margin-bottom: 25px;
+    }
+  </style>
 </head>
 <body>
 
 <h1>MeGPT</h1>
 
-<a href="profile.html">
-<button>Go To Profile</button>
-</a>
+<div id="authSection">
+  <h2>Sign up / Log in</h2>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
 
-<h2>Generate</h2>
+  <button onclick="signUp()">Sign Up</button>
+  <button onclick="logIn()">Log In</button>
+  <button onclick="logOut()">Log Out</button>
 
-<textarea id="promptInput" placeholder="Enter your prompt..."></textarea>
+  <pre id="authOutput"></pre>
+</div>
 
-<button onclick="generateText()">Generate</button>
+<div id="appSection" style="display:none;">
+  <a href="profile.html">
+    <button>Go To Profile</button>
+  </a>
 
-<h2>Output</h2>
+  <h2>Generate</h2>
+  <textarea id="promptInput" placeholder="Enter your prompt..."></textarea>
+  <button onclick="generateText()">Generate</button>
 
-<pre id="output"></pre>
+  <h2>Output</h2>
+  <pre id="output"></pre>
+</div>
 
-<script>
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-const API_BASE = "https://megpt-29p3.onrender.com";
+  const API_BASE = "https://megpt-29p3.onrender.com";
 
-function display(data) {
-document.getElementById("output").textContent =
-typeof data === "string"
-? data
-: JSON.stringify(data, null, 2);
-}
+  const SUPABASE_URL = "https://rfgvtuurrldknwueosus.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmZ3Z0dXVycmxka253dWVvc3VzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTQ2MTEsImV4cCI6MjA4OTA5MDYxMX0.0wRATF3wKY2qERewWzESbNj7uChkdnHcJSJiZaXwnvk";
 
-async function generateText() {
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const prompt = document.getElementById("promptInput").value.trim();
+  const authOutput = document.getElementById("authOutput");
+  const appSection = document.getElementById("appSection");
 
-if (!prompt) return;
+  function showAuthMessage(message) {
+    authOutput.textContent = message;
+  }
 
-display("Generating...");
+  function display(data) {
+    document.getElementById("output").textContent =
+      typeof data === "string" ? data : JSON.stringify(data, null, 2);
+  }
 
-const res = await fetch(`${API_BASE}/generate`, {
-method: "POST",
-headers: {
-"Content-Type": "application/json"
-},
-body: JSON.stringify({ prompt })
-});
+  async function getAccessToken() {
+    const { data } = await supabase.auth.getSession();
+    return data.session?.access_token || null;
+  }
 
-const data = await res.json();
+  async function updateUI() {
+    const token = await getAccessToken();
+    appSection.style.display = token ? "block" : "none";
+    showAuthMessage(token ? "Logged in" : "Not logged in");
+  }
 
-display(data.generated_text || data);
+  window.signUp = async function () {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-}
+    const { error } = await supabase.auth.signUp({ email, password });
 
+    if (error) {
+        showAuthMessage(error.message);
+      return;
+    }
+
+    showAuthMessage("Sign-up successful. Check your email if confirmation is enabled.");
+    await updateUI();
+  };
+
+  window.logIn = async function () {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      showAuthMessage(error.message);
+      return;
+    }
+
+    showAuthMessage("Logged in successfully.");
+    await updateUI();
+  };
+
+  window.logOut = async function () {
+    await supabase.auth.signOut();
+    await updateUI();
+  };
+
+  window.generateText = async function () {
+    const prompt = document.getElementById("promptInput").value.trim();
+    if (!prompt) return;
+
+    const token = await getAccessToken();
+    if (!token) {
+      display("You need to log in first.");
+      return;
+    }
+
+    display("Generating...");
+
+    const res = await fetch(`${API_BASE}/generate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ prompt })
+    });
+
+    const data = await res.json();
+    display(data.generated_text || data.error || data);
+  };
+
+  supabase.auth.onAuthStateChange(async () => {
+    await updateUI();
+  });
+
+  await updateUI();
 </script>
 
 </body>
