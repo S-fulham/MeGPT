@@ -1,18 +1,15 @@
 import re
+import json
+import os
 from collections import Counter
 from textstat import textstat
-from supabase import create_client
-import os
 
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-
-supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+PROFILE_PATH = "profile_data.json"
 
 STOPWORDS = {
-    "the", "and", "is", "in", "to", "of", "a", "that", "it", "on",
-    "for", "as", "with", "was", "were", "be", "by", "this", "are",
-    "or", "an", "at", "from"
+    "the","and","is","in","to","of","a","that","it","on",
+    "for","as","with","was","were","be","by","this","are",
+    "or","an","at","from"
 }
 
 
@@ -21,6 +18,7 @@ def analyze_text(text: str):
     sentences = [s for s in sentences if s.strip()]
 
     paragraphs = [p for p in text.split("\n") if p.strip()]
+
     words = re.findall(r'\b\w+\b', text.lower())
 
     bigrams = zip(words, words[1:])
@@ -48,40 +46,65 @@ def analyze_text(text: str):
     }
 
 
-def load_profile(user_id: str):
-    result = (
-        supabase.table("profiles")
-        .select("profile_data")
-        .eq("user_id", user_id)
-        .execute()
-    )
-
-    if not result.data:
+def load_profile():
+    if not os.path.exists(PROFILE_PATH):
         return None
 
-    data = result.data[0]["profile_data"]
+    with open(PROFILE_PATH, "r") as f:
+        data = json.load(f)
 
-    data["word_freq"] = Counter(data.get("word_freq", {}))
-    data["bigram_freq"] = Counter(data.get("bigram_freq", {}))
-    data["punctuation"] = Counter(data.get("punctuation", {}))
+    data["word_freq"] = Counter(data["word_freq"])
+    data["bigram_freq"] = Counter(data["bigram_freq"])
+    data["punctuation"] = Counter(data["punctuation"])
 
     return data
 
 
-def save_profile(user_id: str, profile: dict):
+def save_profile(profile):
     profile_to_save = profile.copy()
     profile_to_save["word_freq"] = dict(profile["word_freq"])
     profile_to_save["bigram_freq"] = dict(profile["bigram_freq"])
     profile_to_save["punctuation"] = dict(profile["punctuation"])
 
-    (
-        supabase.table("profiles")
-        .upsert({
-            "user_id": user_id,
-            "profile_data": profile_to_save
-        })
-        .execute()
-    )
+    with open(PROFILE_PATH, "w") as f:
+        json.dump(profile_to_save, f, indent=4)
+
+
+def update_profile(texts: list):
+    existing_profile = load_profile()
+
+    if not existing_profile:
+        existing_profile = {
+            "total_texts": 0,
+            "total_sentences": 0,
+            "total_words": 0,
+            "total_characters": 0,
+            "total_paragraphs": 0,
+            "total_readability": 0,
+            "total_stopwords": 0,
+            "word_freq": Counter(),
+            "bigram_freq": Counter(),
+            "punctuation": Counter()
+        }
+
+    for text in texts:
+        analysis = analyze_text(text)
+
+        existing_profile["total_texts"] += 1
+        existing_profile["total_sentences"] += analysis["total_sentences"]
+        existing_profile["total_words"] += analysis["total_words"]
+        existing_profile["total_characters"] += analysis["total_characters"]
+        existing_profile["total_paragraphs"] += analysis["total_paragraphs"]
+        existing_profile["total_readability"] += analysis["readability"]
+        existing_profile["total_stopwords"] += analysis["stopword_count"]
+
+        existing_profile["word_freq"] += analysis["word_freq"]
+        existing_profile["bigram_freq"] += analysis["bigram_freq"]
+        existing_profile["punctuation"] += analysis["punctuation"]
+
+    save_profile(existing_profile)
+
+    return build_readable_profile(existing_profile)
 
 
 def build_readable_profile(profile):
@@ -129,56 +152,16 @@ def build_readable_profile(profile):
     }
 
 
-def update_profile(user_id: str, texts: list):
-    existing_profile = load_profile(user_id)
-
-    if not existing_profile:
-        existing_profile = {
-            "total_texts": 0,
-            "total_sentences": 0,
-            "total_words": 0,
-            "total_characters": 0,
-            "total_paragraphs": 0,
-            "total_readability": 0,
-            "total_stopwords": 0,
-            "word_freq": Counter(),
-            "bigram_freq": Counter(),
-            "punctuation": Counter()
-        }
-
-    for text in texts:
-        analysis = analyze_text(text)
-
-        existing_profile["total_texts"] += 1
-        existing_profile["total_sentences"] += analysis["total_sentences"]
-        existing_profile["total_words"] += analysis["total_words"]
-        existing_profile["total_characters"] += analysis["total_characters"]
-        existing_profile["total_paragraphs"] += analysis["total_paragraphs"]
-        existing_profile["total_readability"] += analysis["readability"]
-        existing_profile["total_stopwords"] += analysis["stopword_count"]
-
-        existing_profile["word_freq"] += analysis["word_freq"]
-        existing_profile["bigram_freq"] += analysis["bigram_freq"]
-        existing_profile["punctuation"] += analysis["punctuation"]
-
-    save_profile(user_id, existing_profile)
-    return build_readable_profile(existing_profile)
-
-
-def get_profile(user_id: str):
-    profile = load_profile(user_id)
+def get_profile():
+    profile = load_profile()
     if not profile:
         return {"message": "No profile created yet."}
 
     return build_readable_profile(profile)
 
 
-def reset_profile(user_id: str):
-    (
-        supabase.table("profiles")
-        .delete()
-        .eq("user_id", user_id)
-        .execute()
-    )
+def reset_profile():
+    if os.path.exists(PROFILE_PATH):
+        os.remove(PROFILE_PATH)
 
     return {"message": "Profile reset successfully."}

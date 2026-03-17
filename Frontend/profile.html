@@ -34,18 +34,6 @@
             font-size: 0.9em;
             color: gray;
         }
-
-        pre {
-            background: #f4f4f4;
-            padding: 10px;
-            white-space: pre-wrap;
-        }
-
-        #status {
-            margin-top: 10px;
-            margin-bottom: 10px;
-            color: #444;
-        }
     </style>
 </head>
 <body>
@@ -60,8 +48,6 @@
 Recommended: Add at least 5 texts to build a strong profile.
 </p>
 
-<div id="status">Checking login...</div>
-
 <textarea id="textInput" placeholder="Type your text here..."></textarea>
 <button onclick="addText()">Add Text</button>
 
@@ -73,16 +59,8 @@ Recommended: Add at least 5 texts to build a strong profile.
 
 <button onclick="resetProfile()">Delete All</button>
 
-<script type="module">
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
+<script>
 const API_BASE = "https://megpt-29p3.onrender.com";
-
-const SUPABASE_URL = "https://rfgvtuurrldknwueosus.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmZ3Z0dXVycmxka253dWVvc3VzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTQ2MTEsImV4cCI6MjA4OTA5MDYxMX0.0wRATF3wKY2qERewWzESbNj7uChkdnHcJSJiZaXwnvk";
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 let textCount = 0;
 let localTexts = [];
 
@@ -102,7 +80,6 @@ function renderTexts() {
 
         const label = document.createElement("span");
         label.textContent = textObj.name;
-        label.style.cursor = "pointer";
 
         label.onclick = () => {
             document.getElementById("selectedText").textContent = textObj.content;
@@ -118,52 +95,10 @@ function renderTexts() {
     });
 }
 
-function setStatus(message) {
-    document.getElementById("status").textContent = message;
-}
-
-async function getAccessToken() {
-    const { data } = await supabase.auth.getSession();
-    return data.session?.access_token || null;
-}
-
-async function requireLogin() {
-    const token = await getAccessToken();
-
-    if (!token) {
-        setStatus("You are not logged in. Go back and log in first.");
-        return null;
-    }
-
-    setStatus("Logged in.");
-    return token;
-}
-
-window.addText = async function addText() {
-    const token = await requireLogin();
-    if (!token) return;
-
+async function addText() {
     const input = document.getElementById("textInput");
     const text = input.value.trim();
     if (!text) return;
-
-    setStatus("Saving text...");
-
-    const res = await fetch(`${API_BASE}/add_texts`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ texts: [text] })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok || data.error || data.detail) {
-        setStatus(data.error || data.detail || "Failed to save text.");
-        return;
-    }
 
     textCount++;
     const textName = "Text " + textCount;
@@ -172,54 +107,37 @@ window.addText = async function addText() {
     localStorage.setItem("texts", JSON.stringify(localTexts));
     renderTexts();
 
-    input.value = "";
-    setStatus("Text saved.");
-};
+const res = await fetch(`${API_BASE}/add_texts`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ texts: [text] })
+});
 
-window.deleteText = function deleteText(index) {
+const data = await res.json();
+console.log("Backend response:", data);
+
+    // Clears input AFTER successful save
+    input.value = "";
+}
+
+function deleteText(index) {
     localTexts.splice(index, 1);
     localStorage.setItem("texts", JSON.stringify(localTexts));
     renderTexts();
-    document.getElementById("selectedText").textContent = "";
-    setStatus("Removed from local list only.");
-};
+}
 
-window.resetProfile = async function resetProfile() {
-    const token = await requireLogin();
-    if (!token) return;
-
-    setStatus("Deleting all profile data...");
-
-    const res = await fetch(`${API_BASE}/reset_profile`, {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${token}`
-        }
-    });
-
-    const data = await res.json();
-
-    if (!res.ok || data.error || data.detail) {
-        setStatus(data.error || data.detail || "Failed to reset profile.");
-        return;
-    }
-
+async function resetProfile() {
     textCount = 0;
     localTexts = [];
     localStorage.removeItem("texts");
     renderTexts();
-    document.getElementById("selectedText").textContent = "";
 
-    setStatus("All profile data deleted.");
-};
-
-supabase.auth.onAuthStateChange(async () => {
-    await requireLogin();
-});
+    await fetch(`${API_BASE}/reset_profile`, {
+        method: "POST"
+    });
+}
 
 renderTexts();
-await requireLogin();
 </script>
 
 </body>
-</html>
