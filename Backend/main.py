@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
-from .style_analyser import update_profile, get_profile, reset_profile
+from .style_analyser import update_profile, get_profile, reset_profile, build_profile_from_texts
 from dotenv import load_dotenv
 from openai import OpenAI
 import os
@@ -30,6 +30,7 @@ class TextUploadRequest(BaseModel):
 
 class GenerateRequest(BaseModel):
     prompt: str
+    texts: List[str]
 
 @app.get("/")
 def read_root():

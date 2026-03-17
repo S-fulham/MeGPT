@@ -60,7 +60,6 @@ Recommended: Add at least 5 texts to build a strong profile.
 <button onclick="resetProfile()">Delete All</button>
 
 <script>
-const API_BASE = "https://megpt-29p3.onrender.com";
 let textCount = 0;
 let localTexts = [];
 
@@ -80,6 +79,7 @@ function renderTexts() {
 
         const label = document.createElement("span");
         label.textContent = textObj.name;
+        label.style.cursor = "pointer";
 
         label.onclick = () => {
             document.getElementById("selectedText").textContent = textObj.content;
@@ -95,7 +95,7 @@ function renderTexts() {
     });
 }
 
-async function addText() {
+function addText() {
     const input = document.getElementById("textInput");
     const text = input.value.trim();
     if (!text) return;
@@ -106,17 +106,6 @@ async function addText() {
     localTexts.push({ name: textName, content: text });
     localStorage.setItem("texts", JSON.stringify(localTexts));
     renderTexts();
-
-const res = await fetch(`${API_BASE}/add_texts`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ texts: [text] })
-});
-
-const data = await res.json();
-console.log("Backend response:", data);
-
-    // Clears input AFTER successful save
     input.value = "";
 }
 
@@ -124,20 +113,19 @@ function deleteText(index) {
     localTexts.splice(index, 1);
     localStorage.setItem("texts", JSON.stringify(localTexts));
     renderTexts();
+    document.getElementById("selectedText").textContent = "";
 }
 
-async function resetProfile() {
+function resetProfile() {
     textCount = 0;
     localTexts = [];
     localStorage.removeItem("texts");
     renderTexts();
-
-    await fetch(`${API_BASE}/reset_profile`, {
-        method: "POST"
-    });
+    document.getElementById("selectedText").textContent = "";
 }
 
 renderTexts();
 </script>
 
 </body>
+</html>

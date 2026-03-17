@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -26,9 +25,6 @@ padding: 10px;
 white-space: pre-wrap;
 }
 </style>
-
-
-
 </head>
 <body>
 
@@ -49,7 +45,6 @@ white-space: pre-wrap;
 <pre id="output"></pre>
 
 <script>
-
 const API_BASE = "https://megpt-29p3.onrender.com";
 
 function display(data) {
@@ -60,31 +55,33 @@ typeof data === "string"
 }
 
 async function generateText() {
-
-
-
 const prompt = document.getElementById("promptInput").value.trim();
-
 if (!prompt) return;
+
+const savedTexts = JSON.parse(localStorage.getItem("texts") || "[]");
+const textContents = savedTexts.map(item => item.content);
 
 display("Generating...");
 
-const res = await fetch(`${API_BASE}/generate`, {
-method: "POST",
-headers: {
-"Content-Type": "application/json"
-},
-body: JSON.stringify({ prompt })
-});
+try {
+    const res = await fetch(`${API_BASE}/generate`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            prompt: prompt,
+            texts: textContents
+        })
+    });
 
-const data = await res.json();
-
-display(data.generated_text || data);
-
-
-
+    const data = await res.json();
+    display(data.generated_text || data.error || data);
+} catch (error) {
+    display("Error: Could not connect to backend.");
 }
-
+}
 </script>
 
 </body>
+</html>
