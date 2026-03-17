@@ -69,10 +69,11 @@ Now write about:
 """
 @app.post("/generate")
 async def generate_text(request: GenerateRequest):
-    profile = get_profile()
-    if not profile or "message" in profile:
-        return {"error": "No profile found. Upload texts first."}
+    if not request.texts:
+        return {"error": "No profile found. Add texts first."}
+
     try:
+        profile = build_profile_from_texts(request.texts)
         style_prompt = build_style_prompt(profile, request.prompt)
 
         response = client.chat.completions.create(
