@@ -159,6 +159,36 @@ def get_profile():
 
     return build_readable_profile(profile)
 
+def build_profile_from_texts(texts: list):
+    profile = {
+        "total_texts": 0,
+        "total_sentences": 0,
+        "total_words": 0,
+        "total_characters": 0,
+        "total_paragraphs": 0,
+        "total_readability": 0,
+        "total_stopwords": 0,
+        "word_freq": Counter(),
+        "bigram_freq": Counter(),
+        "punctuation": Counter()
+    }
+
+    for text in texts:
+        analysis = analyze_text(text)
+
+        profile["total_texts"] += 1
+        profile["total_sentences"] += analysis["total_sentences"]
+        profile["total_words"] += analysis["total_words"]
+        profile["total_characters"] += analysis["total_characters"]
+        profile["total_paragraphs"] += analysis["total_paragraphs"]
+        profile["total_readability"] += analysis["readability"]
+        profile["total_stopwords"] += analysis["stopword_count"]
+
+        profile["word_freq"] += analysis["word_freq"]
+        profile["bigram_freq"] += analysis["bigram_freq"]
+        profile["punctuation"] += analysis["punctuation"]
+
+    return build_readable_profile(profile)
 
 def reset_profile():
     if os.path.exists(PROFILE_PATH):
