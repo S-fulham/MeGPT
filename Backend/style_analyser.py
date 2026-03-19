@@ -65,7 +65,6 @@ def save_profile(profile):
     profile_to_save["word_freq"] = dict(profile["word_freq"])
     profile_to_save["bigram_freq"] = dict(profile["bigram_freq"])
     profile_to_save["punctuation"] = dict(profile["punctuation"])
-
     with open(PROFILE_PATH, "w") as f:
         json.dump(profile_to_save, f, indent=4)
 
