@@ -223,12 +223,72 @@ button:hover {
     margin-bottom: 25px;
     max-width: 600px;
 }
+.intro-btn {
+    background: #b3003b;
+}
+
+@media (max-width: 768px) {
+    .navbar,
+    .subnav {
+        padding: 14px 20px;
+    }
+
+    .container {
+        width: 90%;
+        max-width: 95%;
+        margin: 30px auto;
+    }
+
+    .nav-left {
+        font-size: 20px;
+    }
+
+    .main-title {
+        font-size: 28px;
+    }
+
+    textarea {
+        height: 120px;
+        font-size: 15px;
+    }
+
+    .text-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar,
+    .subnav {
+        padding: 12px 15px;
+    }
+
+    .container {
+        width: 94%;
+        margin: 20px auto;
+    }
+
+    .nav-left {
+        font-size: 18px;
+    }
+
+    .main-title {
+        font-size: 24px;
+    }
+
+    textarea {
+        height: 110px;
+        font-size: 14px;
+    }
+}
 </style>
 </head>
 <body>
 <div class="intro-overlay" id="introOverlay">
   <div class="intro-modal">
-    <h1>Welcome to MeGPT</h1>
+    <h1>Welcome to <span style="color: #b3003b;">MeGPT</span></h1>
 
     <p class="intro-text">
       MeGPT learns your writing style from text samples you upload. It then uses that style profile
@@ -279,7 +339,7 @@ button:hover {
     </div>
 </div>
 
-<div class="intro-text">
+<br><div class="intro-text">
     Most AI writing is clear, but often repetitive and bland. MeGPT is designed to sound more
     like a real person by using your own writing patterns, vocabulary, and rhythm.
 </div>
@@ -318,12 +378,12 @@ button:hover {
         datasets: [
             {
             label: "Your Style",
-            data: [8, 9, 8, 8, 9, 10],
+            data: [7, 6, 7, 8, 9, 10],
             fill: true
         },
         {
             label: "Common AI Style",
-            data: [4, 5, 4, 5, 3, 2],
+            data: [4, 8, 4, 5, 3, 2],
             fill: true
         }
         ]

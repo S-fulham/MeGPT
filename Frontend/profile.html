@@ -162,17 +162,18 @@
     <textarea id="textInput" placeholder="Type your text here..."></textarea>
     <button onclick="addText()">Add Text</button>
 
-    <h3>Saved Texts</h3>
-    <p class="note">
-        Click to view your saved texts.
-    </p>
-    <div id="textList"></div>
+    <div id="savedTextsSection" style="display:none;">
+        <h3>Your Texts</h3>
+        <p class="note">
+            Click on text to view.
+        </p>
+        <div id="textList"></div>
+    </div>
 
-
-    <h3>Selected Text</h3>
-    <pre id="selectedText" style="display:none;"></pre>
-
-    <button onclick="resetProfile()">Delete All</button>
+    <div id="selectedTextSection" style="display:none;">
+        <h3>Selected Text</h3>
+        <pre id="selectedText"></pre>
+    </div>
 </div>
 
 <script>
@@ -187,7 +188,20 @@ if (saved) {
 
 function renderTexts() {
     const container = document.getElementById("textList");
+    const savedSection = document.getElementById("savedTextsSection");
+    const selectedSection = document.getElementById("selectedTextSection");
+    const selectedText = document.getElementById("selectedText");
+
     container.innerHTML = "";
+
+    if (localTexts.length === 0) {
+        savedSection.style.display = "none";
+        selectedSection.style.display = "none";
+        selectedText.textContent = "";
+        return;
+    } else {
+        savedSection.style.display = "block";
+    }
 
     localTexts.forEach((textObj, index) => {
         const div = document.createElement("div");
@@ -198,9 +212,8 @@ function renderTexts() {
         label.className = "text-label";
 
         label.onclick = () => {
-            const box = document.getElementById("selectedText");
-            box.textContent = textObj.content;
-            box.style.display = "block";
+            selectedText.textContent = textObj.content;
+            selectedSection.style.display = "block";
         };
 
         const delBtn = document.createElement("button");
@@ -227,11 +240,13 @@ function addText() {
 }
 
 document.addEventListener("click", function(e) {
-    const box = document.getElementById("selectedText");
+    const selectedSection = document.getElementById("selectedTextSection");
+    const selectedText = document.getElementById("selectedText");
     const textList = document.getElementById("textList");
 
-    if (!box.contains(e.target) && !textList.contains(e.target)) {
-        box.style.display = "none";
+    if (!selectedSection.contains(e.target) && !textList.contains(e.target)) {
+        selectedSection.style.display = "none";
+        selectedText.textContent = "";
     }
 });
 
@@ -239,15 +254,6 @@ function deleteText(index) {
     localTexts.splice(index, 1);
     localStorage.setItem("texts", JSON.stringify(localTexts));
     renderTexts();
-    document.getElementById("selectedText").textContent = "";
-}
-
-function resetProfile() {
-    textCount = 0;
-    localTexts = [];
-    localStorage.removeItem("texts");
-    renderTexts();
-    document.getElementById("selectedText").textContent = "";
 }
 
 renderTexts();
