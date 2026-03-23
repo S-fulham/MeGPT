@@ -109,10 +109,11 @@ def update_profile(texts: list):
 
     save_profile(existing_profile)
 
+
+
+
+    ### Almost everything below here is used to build the statistics report (what shows when you hit "veiw my style sheet") and print it in a nice way, but it's not changing how the backend works.
     return build_readable_profile(existing_profile)
-
-
-### Almost everything below here is used to build the statistics report (what shows when you hit "veiw my style sheet") and print it in a nice way, but it's not changing how the backend works.
 
 #gets profile averages if total sentences is not zero, divide words by sentences otherwise return 0. This avoids crashing from division by zero. 
 def build_readable_profile(profile):
