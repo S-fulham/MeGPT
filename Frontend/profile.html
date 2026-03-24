@@ -141,6 +141,19 @@
             word-wrap: break-word;
             font-family: Arial, sans-serif;
         }
+
+        #styleProfileOutput {
+            margin-top: 10px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 120px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            box-sizing: border-box;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: Arial, sans-serif;
+        }
     </style>
 </head>
 <body>
@@ -161,6 +174,7 @@
 
     <textarea id="textInput" placeholder="Type your text here..."></textarea>
     <button onclick="addText()">Add Text</button>
+    <button id="viewStyleBtn" onclick="viewStyleProfile()" style="display:none;">View My Style Profile</button>
 
     <div id="savedTextsSection" style="display:none;">
         <h3>Your Texts</h3>
@@ -174,9 +188,16 @@
         <h3>Selected Text</h3>
         <pre id="selectedText"></pre>
     </div>
+
+    <div id="styleProfileSection" style="display:none;">
+        <h3>Your Style Profile</h3>
+        <pre id="styleProfileOutput"></pre>
+    </div>
 </div>
 
 <script>
+const API_BASE = "https://megpt-29p3.onrender.com";
+
 let textCount = 0;
 let localTexts = [];
 
@@ -184,6 +205,17 @@ const saved = localStorage.getItem("texts");
 if (saved) {
     localTexts = JSON.parse(saved);
     textCount = localTexts.length;
+}
+
+function updateViewStyleButton() {
+    const btn = document.getElementById("viewStyleBtn");
+    if (localTexts.length > 0) {
+        btn.style.display = "inline-block";
+    } else {
+        btn.style.display = "none";
+        document.getElementById("styleProfileSection").style.display = "none";
+        document.getElementById("styleProfileOutput").textContent = "";
+    }
 }
 
 function renderTexts() {
@@ -198,6 +230,7 @@ function renderTexts() {
         savedSection.style.display = "none";
         selectedSection.style.display = "none";
         selectedText.textContent = "";
+        updateViewStyleButton();
         return;
     } else {
         savedSection.style.display = "block";
@@ -224,6 +257,8 @@ function renderTexts() {
         div.appendChild(delBtn);
         container.appendChild(div);
     });
+
+    updateViewStyleButton();
 }
 
 function addText() {
@@ -237,6 +272,22 @@ function addText() {
     localStorage.setItem("texts", JSON.stringify(localTexts));
     renderTexts();
     input.value = "";
+}
+
+async function viewStyleProfile() {
+    const output = document.getElementById("styleProfileOutput");
+    const section = document.getElementById("styleProfileSection");
+
+    try {
+        const res = await fetch(`${API_BASE}/profile`);
+        const data = await res.json();
+
+        output.textContent = JSON.stringify(data, null, 2);
+        section.style.display = "block";
+    } catch (error) {
+        output.textContent = "Could not load style profile.";
+        section.style.display = "block";
+    }
 }
 
 document.addEventListener("click", function(e) {
