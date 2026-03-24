@@ -31,7 +31,7 @@
 
         .subnav {
             width: 100%;
-            background: #dddddd;
+            background: #ddddddd;
             padding: 12px 40px;
             box-sizing: border-box;
         }
@@ -292,7 +292,24 @@ async function viewStyleProfile() {
 
         const data = await res.json();
 
-        output.textContent = JSON.stringify(data, null, 2);
+        const topWords = (data.top_10_words || [])
+            .map(item => `${item[0]} (${item[1]})`)
+            .join(", ");
+
+        const topBigrams = (data.top_10_bigrams || [])
+            .map(item => `${item[0]} (${item[1]})`)
+            .join(", ");
+
+        output.textContent =
+        `Total texts: ${data.total_texts}
+        Average sentence length: ${data.avg_sentence_length}
+        Average word length: ${data.avg_word_length}
+        Average paragraph length: ${data.avg_paragraph_length}
+        Readability score: ${data.avg_readability}
+        Vocabulary richness: ${data.vocabulary_richness}
+        Stopword ratio: ${data.stopword_ratio}
+        Top words: ${topWords}
+        Top bigrams: ${topBigrams}`;
         section.style.display = "block";
     } catch (error) {
         output.textContent = "Could not load style profile.";
