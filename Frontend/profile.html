@@ -13,6 +13,7 @@
         h1, h2, h3 {
             margin-top: 0;
         }
+
         .navbar {
             width: 100%;
             background: #b3003b;
@@ -30,7 +31,7 @@
 
         .subnav {
             width: 100%;
-            background: #ddddd;
+            background: #dddddd;
             padding: 12px 40px;
             box-sizing: border-box;
         }
@@ -266,7 +267,7 @@ function addText() {
     const text = input.value.trim();
     if (!text) return;
 
-    const preview = text.split(" ").slice(0,5).join(" ") + "...";
+    const preview = text.split(" ").slice(0, 5).join(" ") + "...";
 
     localTexts.push({ name: preview, content: text });
     localStorage.setItem("texts", JSON.stringify(localTexts));
@@ -279,7 +280,16 @@ async function viewStyleProfile() {
     const section = document.getElementById("styleProfileSection");
 
     try {
-        const res = await fetch(`${API_BASE}/profile`);
+        const textContents = localTexts.map(item => item.content);
+
+        const res = await fetch(`${API_BASE}/profile_from_texts`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ texts: textContents })
+        });
+
         const data = await res.json();
 
         output.textContent = JSON.stringify(data, null, 2);

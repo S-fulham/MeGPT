@@ -36,16 +36,19 @@ class GenerateRequest(BaseModel):
 def read_root():
     return {"message": "Backend is running"}
 
-
 @app.post("/add_texts")
 def add_texts(request: TextUploadRequest):
     return update_profile(request.texts)
-
 
 @app.get("/profile")
 def view_profile():
     return get_profile()
 
+@app.post("/profile_from_texts")
+def profile_from_texts(request: TextUploadRequest):
+    if not request.texts:
+        return {"message": "No profile created yet"}
+    return build_profile_from_texts(request.texts)
 
 @app.post("/reset_profile")
 def clear_profile():
@@ -67,6 +70,7 @@ Common bigrams: {profile.get("top_10_bigrams")}
 Now write about:
 {user_prompt}
 """
+
 @app.post("/generate")
 async def generate_text(request: GenerateRequest):
     if not request.texts:
