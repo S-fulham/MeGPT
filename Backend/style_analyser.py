@@ -125,7 +125,7 @@ def build_readable_profile(profile):
     avg_word_length = (
         profile["total_characters"] / profile["total_words"]
         if profile["total_words"] else 0
-    )w
+    )
 
     avg_readability = (
         profile["total_readability"] / profile["total_texts"]
